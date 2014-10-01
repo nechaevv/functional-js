@@ -2,7 +2,7 @@ Functional programming in JavaScript
 =============
 This project is inspired by ScalaZ.
 
-#Components:
+##Contents:
 - Monads
   - Identity
   - Option
