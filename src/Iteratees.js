@@ -58,9 +58,7 @@ define(['functional', 'Monads', 'Promise'], function(functional, Monads) {
     function enumFuture(futureFn) {
         return function(step) {
             return step(function(inputFn) {
-                return futureFn().flatMap(function(value) {
-                    return inputFn(Input.elem(value))
-                });
+                return futureFn().flatMap(functional.compose(Input.elem, inputFn));
             }, function() {
                 return Monads.Id(step);
             });
