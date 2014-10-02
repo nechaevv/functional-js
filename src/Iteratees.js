@@ -1,4 +1,4 @@
-define(['functional', 'Monads'], function(functional, Monads) {
+define(['functional', 'Monads', 'Promise'], function(functional, Monads) {
     var Step = {
         cont: function(inputFn) {
             return function(cont, done) {
@@ -115,9 +115,7 @@ define(['functional', 'Monads'], function(functional, Monads) {
         var enumerators = arguments;
         return function(step) {
             return Array.prototype.reduce.call(enumerators, function(acc, enumerator) {
-                return acc.flatMap(function(step) {
-                    return enumerator(step)
-                });
+                return acc.flatMap(enumerator);
             }, Monads.Id(step));
         }
     }
@@ -133,11 +131,12 @@ define(['functional', 'Monads'], function(functional, Monads) {
         composeEnumerators: composeEnumerators,
         mapEnumerator: mapEnumerator,
         flatMapEnumerator: flatMapEnumerator,
-        foldM: function (fnM, initial) {
-            return foldIterateeStep(fnM, Monads.Id(initial));
-        },
+        foldM: foldIterateeStep,
         fold: function(fn, initial) {
             return foldIterateeStep(functional.compose(fn, Monads.Id), initial);
+        },
+        forEach: function(fn) {
+            return foldIterateeStep(functional.compose(function(acc, elem) {return elem;}, fn, Monads.Id), undefined);
         },
         mapResult: function(iteratee, fn) {
             return iteratee.flatMap(enumEof).map(function(step) {

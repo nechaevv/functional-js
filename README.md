@@ -13,3 +13,4 @@ This project is inspired by ScalaZ.
   - Basic enumerators (Array, Future, Empty, EOF)
   - Simple iteratees - fold, foreach
   - Enumerator composition and transforming
+  - Channels - imperative-style enumerators

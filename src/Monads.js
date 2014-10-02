@@ -1,4 +1,4 @@
-define(function() {
+define(['functional', 'Promise'], function(functional, Promise) {
     function fmap(fn) {
         return function(v) {
             return v.map(fn);
@@ -23,44 +23,40 @@ define(function() {
         if (this instanceof Future) {
             this.deferred = deferred;
             this.map = function (fn) {
-                var result = $.Deferred();
-                deferred.then(function (v) {
-                    result.resolve(fn(v));
-                }, function (err) {
-                    result.reject(err);
-                });
+                var result = Promise();
+                deferred.then(
+                    functional.compose(fn, result.resolve.bind(result)),
+                    result.reject.bind(result)
+                );
                 return Future(result);
             };
             this.flatMap = function (fnM) {
-                var result = $.Deferred();
+                var result = Promise();
                 deferred.then(function (v) {
                     var innerM = fnM(v);
-                    if(innerM instanceof Future) innerM.deferred.then(function (v2) {
-                            result.resolve(v2);
-                        }, function (err) {
-                            result.reject(err);
-                        });
+                    if(innerM instanceof Future) innerM.deferred.then(
+                        result.resolve.bind(result), result.reject.bind(result)
+                    );
                     else if (innerM instanceof Id) result.resolve(innerM.value);
                     else if(innerM instanceof Option) innerM.fold(
                         function(v) {result.resolve(v);},
                         result.reject.bind(result, "Failed by None fold"));
                     else throw new Error('Incompatible monad')
-                }, function (err) {
-                    result.reject(err);
-                });
+                }, result.reject.bind(result));
                 return Future(result);
             };
             this.recover = function(handler) {
-                var recovered = $.Deferred();
-                deferred.then(recovered.resolve.bind(recovered), function(err) {
-                    recovered.resolve(handler(err));
-                });
+                var recovered = Promise();
+                deferred.then(
+                    recovered.resolve.bind(recovered),
+                    functional.compose(handler, recovered.resolve.bind(recovered))
+                );
                 return Future(recovered);
             };
         } else return new Future(deferred)
     }
     Future.pure = Future.prototype.pure = function(v) {
-        return Future(new $.Deferred().resolve(v));
+        return Future(Promise().resolve(v));
     };
     Future.fmap = Future.prototype.fmap = fmap;
 
