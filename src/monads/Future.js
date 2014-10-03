@@ -33,4 +33,5 @@ define(['functions/compose', 'Promise', './Identity'], function(compose, Promise
             };
         } else return new Future(deferred);
     }
+    return Future;
 });
