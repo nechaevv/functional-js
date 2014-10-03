@@ -1,4 +1,4 @@
-define(['compose', './Input', 'monads/Identity'], function(compose, Input, Id) {
+define(['functions/compose', './Input', 'monads/Identity'], function(compose, Input, Id) {
     return function(futureFn) {
         return function (step) {
             return step(function (inputFn) {

@@ -1,4 +1,4 @@
-define(['compose', 'iteratees/Step'], function(compose, Step) {
+define(['functions/compose', 'iteratees/Step'], function(compose, Step) {
     return function (source, mapFn) { //mapFn: Input => Input
         function mapStep(step) {
             return step(function(inputFn) {
