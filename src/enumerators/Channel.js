@@ -17,7 +17,6 @@ define(['./Input', 'Promise', 'monads/Future', 'monads/Identity'], function(Inpu
     function Channel() {
         if (this instanceof Channel) {
             this.next = Promise();
-            this.enumerator = BroadcastEnumerator(this);
         }
     }
     Channel.prototype.push = function(v) {
@@ -29,6 +28,9 @@ define(['./Input', 'Promise', 'monads/Future', 'monads/Identity'], function(Inpu
         var pending = this.next;
         this.next = undefined;
         pending.resolve(Input.eof);
+    };
+    Channel.prototype.enumerator = function() {
+        return BroadcastEnumerator(this);
     };
 
     return Channel;
