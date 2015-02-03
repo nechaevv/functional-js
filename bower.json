@@ -1,0 +1,21 @@
+{
+  "name": "functional-js",
+  "version": "0.1",
+  "homepage": "https://github.com/nechaevv/functional-js",
+  "authors": [
+    "Vasily Nechaev <vn.glider@gmail.com>"
+  ],
+  "description": "Functional programming in JavaScript",
+  "main": "dist/*.js",
+  "keywords": [
+    "functional"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

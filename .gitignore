@@ -1,3 +1,5 @@
 .idea
 *.iml
 atlassian-ide-plugin.xml
+/dist
+node_modules
