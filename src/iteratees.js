@@ -1,5 +1,5 @@
-import { compose } from 'functions';
-import { Id } from 'monads';
+import { compose } from 'functional-js/functions';
+import { Id } from 'functional-js/monads';
 
 export var Step = {
     cont: function(inputFn) {
@@ -22,4 +22,17 @@ export function fold(fn, initial) {
 
 export function forEach(fn) {
     return foldStep(compose((acc, elem) => elem, fn, Id), undefined);
+}
+
+export function cancellable(inner) {
+    var cancelled = false;
+    function wrapStep(step) {
+        return (cont, done) => cancelled ? Step.done() : step(cont, done).map(wrapStep);
+    }
+    var iteratee = (cont, done) => inner(cont,done).map(wrapStep);
+    iteratee.cancel = function() {
+        cancelled = true;
+    };
+
+    return iteratee;
 }
