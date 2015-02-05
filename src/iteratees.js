@@ -29,7 +29,7 @@ export function cancellable(inner) {
     function wrapStep(step) {
         return (cont, done) => cancelled ? Step.done() : step(cont, done).map(wrapStep);
     }
-    var iteratee = (cont, done) => wrapStep(inner(cont,done).map(wrapStep));
+    var iteratee = wrapStep((cont, done) => inner(cont,done).map(wrapStep));
     iteratee.cancel = function() {
         cancelled = true;
     };
