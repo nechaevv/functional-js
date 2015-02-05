@@ -16,8 +16,8 @@ export function EOF(step) {
 
 export function mapDone(iteratee, fn) {
     return iteratee.flatMap(EOF).map(step => step(
-            () => { throw new Error('Diverging Iteratee') },
-            fn));
+        () => { throw new Error('Diverging Iteratee') },
+        fn));
 }
 
 export function compose() {
@@ -47,45 +47,45 @@ export function flatMap(source, transformFn) { //transformFn: v => Enumerator
 export function One(value) {
     return step => step(
             inputFn => inputFn(Input.elem(value)),
-            () => Id(step)
-        );
+        () => Id(step)
+    );
 }
 
 export function List(array) {
     return step => array.reduce(
         (acc, elem) => acc.flatMap(
                 step => step(
-                        inputFn => inputFn(Input.elem(elem)),
-                        () =>  Id(step)
-                )
+                    inputFn => inputFn(Input.elem(elem)),
+                () =>  Id(step)
+            )
         ), Id(step));
 }
 
 export function Future(futureFn) {
     return step => step(
             inputFn => futureFn().flatMap(composeFn(Input.elem, inputFn)),
-            () => Id(step));
+        () => Id(step));
 }
 
 function enumFutureInput(futureInputFn) {
     return step => step(
-        inputFn => futureInputFn().flatMap(inputFn),
+            inputFn => futureInputFn().flatMap(inputFn),
         () => Id(step)
     );
 }
 
 function BroadcastEnumerator(channel) {
-    return step => enumFutureInput(FutureMonad.bind(this, channel._next))(step).flatMap(BroadcastEnumerator(channel));
+    return step => enumFutureInput(() => channel._next)(step).flatMap(BroadcastEnumerator(channel));
 }
 
 export class Channel {
     constructor() {
-        if (this instanceof Channel) this._createNext();
+        this._createNext();
     }
     _createNext() {
-        this._next = new Promise((resolve, reject) => {
+        this._next = FutureMonad(new Promise((resolve, reject) => {
             this._resolve = resolve;
-        });
+        }));
     }
     push(v) {
         var resolve = this._resolve;

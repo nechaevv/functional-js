@@ -1,9 +1,10 @@
 export function compose() {
     var composeChain = arguments;
     return function () {
-        return Array.prototype.slice.call(composeChain, 1).reduce(function (acc, fn) {
-            return fn(acc);
-        }, composeChain[0].apply(this, arguments));
+        return Array.prototype.slice.call(composeChain, 1).reduce(
+            (acc, fn) => fn(acc),
+            composeChain[0].apply(this, arguments)
+        );
     }
 }
 
