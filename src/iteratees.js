@@ -1,5 +1,5 @@
-import { compose } from 'functional-js/functions';
-import { Id } from 'functional-js/monads';
+import { compose } from './functions';
+import { Id } from './monads';
 
 export var Step = {
     cont: function(inputFn) {

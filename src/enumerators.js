@@ -1,5 +1,5 @@
-import { compose as composeFn } from 'functional-js/functions';
-import { Id, Future as FutureMonad } from 'functional-js/monads';
+import { compose as composeFn } from './functions';
+import { Id, Future as FutureMonad } from './monads';
 
 export var Input = {
     elem: function(e) {
