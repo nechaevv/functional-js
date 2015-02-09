@@ -28,7 +28,7 @@ export function compose() {
 
 export function mapInput(source, mapFn) { //mapFn: Input => Input
     function mapStep(step) {
-        return step(inputFn => Step.cont(composeFn(mapFn, inputFn, iteratee => iteratee.flatMap(mapStep))), () => step);
+        return step(inputFn => Step.cont(composeFn(mapFn, inputFn, iteratee => iteratee.map(mapStep))), () => step);
     }
     return step => source(mapStep(step));
 }
@@ -65,21 +65,19 @@ export function List(array) {
         ), Id(step));
 }
 
-export function Future(futureFn) {
+export function FutureInput(futureInput) {
     return step => step(
-            inputFn => futureFn().flatMap(composeFn(Input.elem, inputFn)),
-        () => Id(step));
-}
-
-function enumFutureInput(futureInputFn) {
-    return step => step(
-            inputFn => futureInputFn().flatMap(inputFn),
+        inputFn => futureInput.flatMap(inputFn),
         () => Id(step)
     );
 }
 
+export function Future(future) {
+    return FutureInput(future.map(Input.elem));
+}
+
 function BroadcastEnumerator(channel) {
-    return step => enumFutureInput(() => channel._next)(step).flatMap(BroadcastEnumerator(channel));
+    return step => FutureInput(channel._next)(step).flatMap(BroadcastEnumerator(channel));
 }
 
 export class Channel {
