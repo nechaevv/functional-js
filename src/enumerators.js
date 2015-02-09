@@ -26,11 +26,14 @@ export function compose() {
     return step => Array.prototype.reduce.call(enumerators, (acc, enumerator) => acc.flatMap(enumerator), Id(step));
 }
 
-export function map(source, mapFn) { //mapFn: Input => Input
+export function mapInput(source, mapFn) { //mapFn: Input => Input
     function mapStep(step) {
         return step(inputFn => Step.cont(composeFn(mapFn, inputFn, iteratee => iteratee.flatMap(mapStep))), () => step);
     }
     return step => source(mapStep(step));
+}
+export function map(source, mapFn) { //mapFn A=>B
+    return mapInput(source, input => (elem, eof) => input(composeFn(mapFn, elem), eof));
 }
 
 export function flatMap(source, transformFn) { //transformFn: v => Enumerator
