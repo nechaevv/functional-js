@@ -1,5 +1,6 @@
 import { compose as composeFn } from './functions';
 import { Id, Future as FutureMonad } from './monads';
+import { Step } from './iteratees';
 
 export var Input = {
     elem: function(e) {
