@@ -39,7 +39,7 @@ export function map(source, mapFn) { //mapFn A=>B
 export function flatMap(source, transformFn) { //transformFn: v => Enumerator
     function mapStep(step) {
         return step(
-            () => Step.cont(compose(
+            () => Step.cont(composeFn(
                     input => input(transformFn, () => EOF ),
                     enumerator => enumerator(step)
             )), () => step
