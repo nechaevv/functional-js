@@ -1,3 +1,5 @@
+import { compose } from './functions';
+
 export function Id(value) {
     if (this instanceof Id) {
         this.map = function(fn) {
@@ -66,7 +68,7 @@ export function List(array) {
 export function Future(promise) {
     if (this instanceof Future) {
         this._promise = promise;
-        this.map = promise.then.bind(promise);
+        this.map = compose(promise.then.bind(promise), Future);
         this.forEach = promise.then.bind(promise);
         this.flatMap = function (fnM) {
             var result = new Promise((resolve, reject) => {
