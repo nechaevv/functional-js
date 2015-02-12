@@ -1,3 +1,5 @@
+"use strict";
+
 export function compose() {
     var composeChain = arguments;
     return function () {

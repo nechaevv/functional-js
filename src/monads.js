@@ -1,3 +1,5 @@
+"use strict";
+
 import { compose } from './functions';
 
 export function Id(value) {

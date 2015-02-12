@@ -1,6 +1,9 @@
-import { compose as composeFn } from './functions';
+"use strict";
+
+import { compose } from './functions';
 import { Id, Future as FutureMonad } from './monads';
 import { Step } from './iteratees';
+
 
 export var Input = {
     elem: function(e) {
@@ -11,9 +14,34 @@ export var Input = {
     }
 };
 
-export function EOF(step) {
-    return step(inputFn => inputFn(Input.eof), () => Id(step));
+export function Enumerator(stepFn) {
+    stepFn.append = function(nextEnum) {
+        return Enumerator(step => this(step).flatMap(nextEnum(step)));
+    };
+    stepFn.mapInput = function(mapInputFn) { //mapFn: Input => Input
+        function mapStep(step) {
+            return step(inputFn => Step.cont(compose(mapInputFn, inputFn, iteratee => iteratee.map(mapStep))), () => step);
+        }
+        return Enumerator(step => this(mapStep(step)));
+    };
+    stepFn.map = function(mapFn) { //mapFn A=>B
+        return this.mapInput(input => (elem, eof) => input(compose(mapFn, elem), eof));
+    };
+    stepFn.flatMap = function(transformFn) { //transformFn: v => Enumerator
+        function mapStep(step) {
+            return step(
+                () => Step.cont(compose(
+                        input => input(transformFn, () => EOF ),
+                        enumerator => enumerator(step)
+                )), () => step
+            )
+        }
+        return Enumerator(step => this(mapStep(step)));
+    };
+    return stepFn;
 }
+
+export var EOF = Enumerator(step => step(inputFn => inputFn(Input.eof), () => Id(step)));
 
 export function mapDone(iteratee, fn) {
     return iteratee.flatMap(EOF).map(step => step(
@@ -21,63 +49,32 @@ export function mapDone(iteratee, fn) {
         fn));
 }
 
-export function compose() {
-    var enumerators = arguments;
-    return step => Array.prototype.reduce.call(enumerators, (acc, enumerator) => acc.flatMap(enumerator), Id(step));
-}
-
-export function mapInput(source, mapFn) { //mapFn: Input => Input
-    function mapStep(step) {
-        return step(inputFn => Step.cont(composeFn(mapFn, inputFn, iteratee => iteratee.map(mapStep))), () => step);
-    }
-    return step => source(mapStep(step));
-}
-export function map(source, mapFn) { //mapFn A=>B
-    return mapInput(source, input => (elem, eof) => input(composeFn(mapFn, elem), eof));
-}
-
-export function flatMap(source, transformFn) { //transformFn: v => Enumerator
-    function mapStep(step) {
-        return step(
-            () => Step.cont(composeFn(
-                    input => input(transformFn, () => EOF ),
-                    enumerator => enumerator(step)
-            )), () => step
-        )
-    }
-    return step => source(mapStep(step));
-}
-
 export function One(value) {
-    return step => step(
+    return Enumerator(step => step(
             inputFn => inputFn(Input.elem(value)),
         () => Id(step)
-    );
+    ));
 }
 
 export function List(array) {
-    return step => array.reduce(
+    return Enumerator(step => array.reduce(
         (acc, elem) => acc.flatMap(
                 step => step(
                     inputFn => inputFn(Input.elem(elem)),
                 () =>  Id(step)
             )
-        ), Id(step));
+        ), Id(step)));
 }
 
-export function FutureInput(futureInput) {
-    return step => step(
-        inputFn => futureInput.flatMap(inputFn),
+export function FutureInput(futureInputFn) {
+    return Enumerator(step => step(
+            inputFn => futureInputFn().flatMap(inputFn),
         () => Id(step)
-    );
+    ));
 }
 
-export function Future(future) {
-    return FutureInput(future.map(Input.elem));
-}
-
-function BroadcastEnumerator(channel) {
-    return step => FutureInput(channel._next)(step).flatMap(BroadcastEnumerator(channel));
+export function Future(futureFn) {
+    return FutureInput(compose(futureFn, fv => fv.map(Input.elem)));
 }
 
 export class Channel {
@@ -101,6 +98,6 @@ export class Channel {
         resolve(Input.eof);
     }
     enumerator() {
-        return BroadcastEnumerator(this);
+        return Enumerator(step => FutureInput(() => this._next)(step).flatMap(this.enumerator()));
     }
 }

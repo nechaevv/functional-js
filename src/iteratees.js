@@ -1,3 +1,5 @@
+"use strict";
+
 import { compose } from './functions';
 import { Id } from './monads';
 
