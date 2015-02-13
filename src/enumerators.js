@@ -16,7 +16,7 @@ export var Input = {
 
 export function Enumerator(stepFn) {
     stepFn.append = function(nextEnum) {
-        return Enumerator(step => this(step).flatMap(nextEnum(step)));
+        return Enumerator(step => this(step).flatMap(nextEnum));
     };
     stepFn.mapInput = function(mapInputFn) { //mapFn: Input => Input
         function mapStep(step) {
@@ -41,7 +41,7 @@ export function Enumerator(stepFn) {
     return stepFn;
 }
 
-export var EOF = Enumerator(step => step(inputFn => inputFn(Input.eof), () => Id(step)));
+export var EOF = Enumerator(step => step(inputFn => inputFn(Input.eof), () => new Id(step)));
 
 export function mapDone(iteratee, fn) {
     return iteratee.flatMap(EOF).map(step => step(
@@ -52,7 +52,7 @@ export function mapDone(iteratee, fn) {
 export function One(value) {
     return Enumerator(step => step(
             inputFn => inputFn(Input.elem(value)),
-        () => Id(step)
+        () => new Id(step)
     ));
 }
 
@@ -61,15 +61,15 @@ export function List(array) {
         (acc, elem) => acc.flatMap(
                 step => step(
                     inputFn => inputFn(Input.elem(elem)),
-                () =>  Id(step)
+                () =>  new Id(step)
             )
-        ), Id(step)));
+        ), new Id(step)));
 }
 
 export function FutureInput(futureInputFn) {
     return Enumerator(step => step(
             inputFn => futureInputFn().flatMap(inputFn),
-        () => Id(step)
+        () => new Id(step)
     ));
 }
 
@@ -82,7 +82,7 @@ export class Channel {
         this._createNext();
     }
     _createNext() {
-        this._next = FutureMonad(new Promise((resolve, reject) => {
+        this._next = new FutureMonad(new Promise((resolve, reject) => {
             this._resolve = resolve;
         }));
     }
@@ -98,6 +98,9 @@ export class Channel {
         resolve(Input.eof);
     }
     enumerator() {
-        return Enumerator(step => FutureInput(() => this._next)(step).flatMap(this.enumerator()));
+        return Enumerator(step => step(
+                inputFn => this._next.flatMap(inputFn).flatMap(this.enumerator()),
+            () => new Id(step)
+        ));
     }
 }
