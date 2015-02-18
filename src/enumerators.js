@@ -104,3 +104,17 @@ export class Channel {
         ));
     }
 }
+
+export function EventStream(eventTarget, eventName) {
+    var channel = new Channel();
+    function listener(event) {
+        channel.push(event);
+    }
+    eventTarget.addEventListener(eventName, listener);
+    var enumerator = channel.enumerator();
+    enumerator.close = function() {
+        eventTarget.removeEventListener(eventName, listener);
+        channel.eofAndEnd();
+    };
+    return enumerator;
+}
