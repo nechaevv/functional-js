@@ -20,7 +20,10 @@ export function Enumerator(stepFn) {
     };
     stepFn.mapInput = function(mapInputFn) { //mapFn: Input => Input
         function mapStep(step) {
-            return step(inputFn => Step.cont(compose(mapInputFn, inputFn, iteratee => iteratee.map(mapStep))), () => step);
+            return step(
+                inputFn => Step.cont(compose(mapInputFn, inputFn, iteratee => iteratee.map(mapStep))),
+                () => new Id(step)
+            );
         }
         return Enumerator(step => this(mapStep(step)));
     };
@@ -33,11 +36,24 @@ export function Enumerator(stepFn) {
                 () => Step.cont(compose(
                         input => input(transformFn, () => EOF ),
                         enumerator => enumerator(step)
-                )), () => step
+                )), () => new Id(step)
             )
         }
         return Enumerator(step => this(mapStep(step)));
     };
+    /* TODO
+    stepFn.filter = function(predicate) {
+        return Enumerator(step =>
+            this()
+        );
+        function mapStep(step) {
+            return step(
+                inputFn => inputFn(),
+                () => new Id(step)
+            )
+        }
+    };
+    */
     return stepFn;
 }
 

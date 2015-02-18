@@ -39,3 +39,10 @@ export function forEachCancellable(fn) {
         }
     }), () => new Id(Step.done()));
 }
+
+export var head = Step.cont(
+    input => input(
+        elem => new Id(Step.done(elem)),
+        () => Step.done(undefined)
+    )
+);
