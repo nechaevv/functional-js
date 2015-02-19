@@ -41,19 +41,18 @@ export function Enumerator(stepFn) {
         }
         return Enumerator(step => this(mapStep(step)));
     };
-    /* TODO
-    stepFn.filter = function(predicate) {
-        return Enumerator(step =>
-            this()
-        );
+    stepFn.filter = function(predicate) { //predicate: v => boolean
         function mapStep(step) {
             return step(
-                inputFn => inputFn(),
+                    inputFn => Step.cont(compose(input => input(
+                        elem => predicate(elem) ? inputFn(input) : Id(step),
+                        inputFn(input)
+                    ), iteratee => iteratee.map(mapStep))),
                 () => new Id(step)
-            )
+            );
         }
+        return Enumerator(step => this(mapStep(step)));
     };
-    */
     return stepFn;
 }
 
