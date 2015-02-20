@@ -58,10 +58,10 @@ export function Enumerator(stepFn) {
 
 export var EOF = Enumerator(step => step(inputFn => inputFn(Input.eof), () => new Id(step)));
 
-export function mapDone(iteratee, fn) {
+export function mapDone(iteratee) {
     return iteratee.flatMap(EOF).map(step => step(
         () => { throw new Error('Diverging Iteratee') },
-        fn));
+        result => result));
 }
 
 export function One(value) {
