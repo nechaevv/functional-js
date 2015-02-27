@@ -52,6 +52,7 @@ export var None = new Option();
 None.fold = function(some, none) { return none(); };
 Option.Some = Some;
 Option.None = None;
+Option.from = v => (v === undefined || v === null) ? Option.None : Option.Some(v);
 
 export class List {
     constructor(array) {
