@@ -43,6 +43,6 @@ export function forEachCancellable(fn) {
 export var head = Step.cont(
     input => input(
         elem => new Id(Step.done(elem)),
-        () => Step.done(undefined)
+        () => new Id(Step.done(undefined))
     )
 );
