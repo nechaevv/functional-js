@@ -41,6 +41,7 @@ export class Option {
 
 export class Some extends Option {
     constructor(value) {
+        super();
         this._value = value;
     }
     fold(some, none) {
