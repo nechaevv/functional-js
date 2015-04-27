@@ -14,3 +14,10 @@ This project is inspired by ScalaZ.
   - Simple iteratees - fold, foreach
   - Enumerator composition and transforming
   - Channels - imperative-style enumerators
+
+##How to build
+`npm install bower gulp gulp-traceur`
+
+`bower install`
+
+`gulp`
